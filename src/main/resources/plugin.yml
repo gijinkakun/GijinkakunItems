@@ -1,0 +1,10 @@
+name: GijinkakunItems
+version: 1.0
+main: com.gijinkakunitems.GijinkakunItems
+api-version: 1.21.0
+description: GijinkakunItems plugin introduces a variety of unique, enchanted items, each with its own special abilities.
+author: Christopher Satterthwaite
+commands:
+  gijinkakunitems:
+    description: Give special items to players
+    usage: /gijinkakunitems give <item> <playername> <amount>

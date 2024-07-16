@@ -1,0 +1,433 @@
+package com.gijinkakunitems;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+
+import com.gijinkakunitems.items.*;
+
+public class EventListener implements Listener {
+
+    private final GijinkakunItems plugin;
+
+    public EventListener(GijinkakunItems plugin) {
+        this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onPlayerUse(PlayerInteractEvent event) {
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
+            ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
+            Block block = event.getClickedBlock();
+    
+            if (item != null && block != null) {
+                if (isVerdantPurifier(item)) {
+                    if (block.getType() == Material.NETHERRACK) {
+                        block.setType(Material.GRASS_BLOCK);
+                        event.getPlayer().sendMessage(ChatColor.GREEN + "The Verdant Purifier has transformed Netherrack into Grass Block!");
+                    } else if (block.getType() == Material.GRASS_BLOCK || block.getType() == Material.SAND) {
+                        applyBonemealEffect(block, event.getPlayer());
+                    }
+                } else if (isMythrilbreaker(item)) {
+                    superMine(event);
+                } else if (isEarthshaper(item)) {
+                    superDig(event);
+                } else if (isTimbercleaver(item)) {
+                    superLog(event);
+                }
+            }
+        }
+    }
+    
+
+    private void applyBonemealEffect(Block block, Player player) {
+        if (block.getType() == Material.GRASS_BLOCK) {
+            block.applyBoneMeal(BlockFace.UP);
+            player.sendMessage(ChatColor.GREEN + "The Verdant Purifier has applied a bonemeal effect!");
+        } else if (block.getType() == Material.SAND) {
+            // Applying bonemeal effect to sand should simulate bonemeal effect on a nearby plantable block
+            Block above = block.getRelative(BlockFace.UP);
+            if (above.getType() == Material.AIR) {
+                above.setType(Material.GRASS_BLOCK); // For simplicity, we convert the sand to grass block.
+                player.sendMessage(ChatColor.GREEN + "The Verdant Purifier has turned sand into grass!");
+            }
+        }
+    }
+
+
+    @EventHandler
+    public void onProjectileHit(ProjectileHitEvent event) {
+        if (event.getEntity() instanceof Arrow) {
+            Arrow arrow = (Arrow) event.getEntity();
+            if (arrow.getShooter() instanceof Player) {
+                Player player = (Player) arrow.getShooter();
+                ItemStack bow = player.getInventory().getItemInMainHand();
+                if (isChickenShooter(bow)) {
+                    arrow.getWorld().spawnEntity(arrow.getLocation(), EntityType.CHICKEN);
+                } else if (isInfernoBow(bow)) {
+                    Block block = arrow.getLocation().getBlock();
+                    block.setType(Material.LAVA);
+                } else if (isTidecallerBow(bow)) {
+                    Block block = arrow.getLocation().getBlock();
+                    block.setType(Material.WATER);
+                } else if (isArcaneDetonator(bow)) {
+                    Block block = arrow.getLocation().getBlock();
+                    block.getWorld().createExplosion(block.getLocation(), 5.0F, false);
+                } else if (isStormstriker(bow)) {
+                    if (arrow.getWorld().hasStorm()) {
+                        arrow.getWorld().strikeLightning(arrow.getLocation());
+                    } else {
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                                new ComponentBuilder(ChatColor.RED + "Stormstriker only works in the rain!").create());
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getEntity() instanceof Player || event.getEntity() instanceof LivingEntity) {
+            if (event.getDamager() instanceof Arrow) {
+                Arrow arrow = (Arrow) event.getDamager();
+                if (arrow.getShooter() instanceof Player) {
+                    Player shooter = (Player) arrow.getShooter();
+                    ItemStack bow = shooter.getInventory().getItemInMainHand();
+                    if (isStormstriker(bow) && shooter.getWorld().hasStorm()) {
+                        event.setDamage(event.getDamage() + 16); // Increased damage to 8 hearts (16 points)
+                    }
+                }
+            } else if (event.getDamager() instanceof Player) {
+                Player attacker = (Player) event.getDamager();
+                ItemStack weapon = attacker.getInventory().getItemInMainHand();
+
+                if (isShroomBlade(weapon)) {
+                    Player victim = (Player) event.getEntity();
+                    victim.getPersistentDataContainer().set(new NamespacedKey(plugin, "last_attacker"),
+                            PersistentDataType.STRING, attacker.getName());
+                } else if (isTempestScythe(weapon)) {
+                    Location location = event.getEntity().getLocation();
+                    Collection<Entity> entities = location.getWorld().getNearbyEntities(location, 4, 4, 4);
+                    for (Entity entity : entities) {
+                        if (entity instanceof LivingEntity && !entity.equals(event.getEntity())) {
+                            ((LivingEntity) entity).damage(10);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        Location location = player.getLocation();
+
+        if (location.getY() < -64) { // Check if player is in the void
+            Inventory inventory = player.getInventory();
+            for (ItemStack item : inventory.getContents()) {
+                if (isStringOfSacrifice(item)) {
+                    // Teleport player to overworld spawn
+                    World overworld = Bukkit.getWorlds().get(0); // Assuming the first world is the overworld
+                    Location spawnLocation = overworld.getSpawnLocation();
+                    player.teleport(spawnLocation);
+
+                    // Make player invulnerable for 5 seconds
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 100, 5, false, false, true));
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 100, 1, false, false, true));
+
+                    // Remove one String of Sacrifice from inventory
+                    if (item.getAmount() > 1) {
+                        item.setAmount(item.getAmount() - 1);
+                    } else {
+                        inventory.remove(item);
+                    }
+
+                    // Send player a message
+                    player.sendMessage(ChatColor.GREEN + "The String of Sacrifice saved you from the void!");
+
+                    // Stop processing once we find the item
+                    break;
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (event.getCause() == EntityDamageEvent.DamageCause.VOID) {
+                Inventory inventory = player.getInventory();
+                for (ItemStack item : inventory.getContents()) {
+                    if (isStringOfSacrifice(item)) {
+                        event.setCancelled(true);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void superMine(PlayerInteractEvent event) {
+        Block block = event.getClickedBlock();
+        if (block != null && Utils.allowedBlocks.contains(block.getType())) {
+            int playerLevel = event.getPlayer().getLevel();
+            if (playerLevel >= 100) {
+                event.getPlayer().setLevel(playerLevel - 100);
+                for (int x = -1; x <= 1; x++) {
+                    for (int y = -1; y <= 1; y++) {
+                        for (int z = -1; z <= 1; z++) {
+                            Block targetBlock = block.getRelative(x, y, z);
+                            if (Utils.allowedBlocks.contains(targetBlock.getType())) {
+                                targetBlock.breakNaturally();
+                            }
+                        }
+                    }
+                }
+            } else {
+                event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                        new ComponentBuilder(ChatColor.RED + "Not enough levels").create());
+            }
+        }
+    }
+
+    private void superDig(PlayerInteractEvent event) {
+        Block block = event.getClickedBlock();
+        if (block != null && Utils.allowedShovelBlocks.contains(block.getType())) {
+            int playerLevel = event.getPlayer().getLevel();
+            if (playerLevel >= 50) {
+                event.getPlayer().setLevel(playerLevel - 50);
+                for (int x = -1; x <= 1; x++) {
+                    for (int y = -1; y <= 1; y++) {
+                        for (int z = -1; z <= 1; z++) {
+                            Block targetBlock = block.getRelative(x, y, z);
+                            if (Utils.allowedShovelBlocks.contains(targetBlock.getType())) {
+                                targetBlock.breakNaturally();
+                            }
+                        }
+                    }
+                }
+            } else {
+                event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                        new ComponentBuilder(ChatColor.RED + "Not enough levels").create());
+            }
+        }
+    }
+
+    private void superLog(PlayerInteractEvent event) {
+        Block block = event.getClickedBlock();
+        if (block != null && Utils.logBlocks.contains(block.getType())) {
+            int playerLevel = event.getPlayer().getLevel();
+            if (playerLevel >= 100) {
+                event.getPlayer().setLevel(playerLevel - 100);
+                cutTree(block);
+            } else {
+                event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                        new ComponentBuilder(ChatColor.RED + "Not enough levels").create());
+            }
+        }
+    }
+
+    private void cutTree(Block block) {
+        if (block == null || !Utils.logBlocks.contains(block.getType())) {
+            return;
+        }
+        block.breakNaturally();
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    cutTree(block.getRelative(x, y, z));
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        Inventory inventory = event.getInventory();
+        InventoryType type = inventory.getType();
+
+        if (type == InventoryType.ANVIL ||
+                type == InventoryType.GRINDSTONE ||
+                type == InventoryType.SMITHING ||
+                type == InventoryType.ENCHANTING) {
+
+            ItemStack currentItem = event.getCurrentItem();
+            ItemStack cursorItem = event.getCursor();
+
+            if (isMythrilbreaker(currentItem) || isMythrilbreaker(cursorItem) ||
+                    isEarthshaper(currentItem) || isEarthshaper(cursorItem) ||
+                    isTimbercleaver(currentItem) || isTimbercleaver(cursorItem) ||
+                    isShroomBlade(currentItem) || isShroomBlade(cursorItem) ||
+                    isChickenShooter(currentItem) || isChickenShooter(cursorItem) ||
+                    isInfernoBow(currentItem) || isInfernoBow(cursorItem) ||
+                    isTidecallerBow(currentItem) || isTidecallerBow(cursorItem) ||
+                    isArcaneDetonator(currentItem) || isArcaneDetonator(cursorItem) ||
+                    isStormstriker(currentItem) || isStormstriker(cursorItem) ||
+                    isStringOfSacrifice(currentItem) || isStringOfSacrifice(cursorItem) ||
+                    isTempestScythe(currentItem) || isTempestScythe(cursorItem) ||
+                    isVerdantPurifier(currentItem) || isVerdantPurifier(cursorItem)) {
+                event.setCancelled(true);
+                if (event.getWhoClicked() instanceof Player) {
+                    ((Player) event.getWhoClicked())
+                            .sendMessage(ChatColor.RED + "You cannot modify the special items!");
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        updateSpecialItems(player);
+    }
+
+    private void updateSpecialItems(Player player) {
+        Inventory inventory = player.getInventory();
+        for (int i = 0; i < inventory.getSize(); i++) {
+            ItemStack item = inventory.getItem(i);
+            if (isMythrilbreaker(item)) {
+                inventory.setItem(i, Mythrilbreaker.create(plugin));
+            } else if (isEarthshaper(item)) {
+                inventory.setItem(i, Earthshaper.create(plugin));
+            } else if (isTimbercleaver(item)) {
+                inventory.setItem(i, Timbercleaver.create(plugin));
+            } else if (isShroomBlade(item)) {
+                inventory.setItem(i, ShroomBlade.create(plugin));
+            } else if (isChickenShooter(item)) {
+                inventory.setItem(i, ChickenShooter.create(plugin));
+            } else if (isInfernoBow(item)) {
+                inventory.setItem(i, InfernoBow.create(plugin));
+            } else if (isTidecallerBow(item)) {
+                inventory.setItem(i, TidecallerBow.create(plugin));
+            } else if (isArcaneDetonator(item)) {
+                inventory.setItem(i, ArcaneDetonator.create(plugin));
+            } else if (isStormstriker(item)) {
+                inventory.setItem(i, Stormstriker.create(plugin));
+            } else if (isStringOfSacrifice(item)) {
+                inventory.setItem(i, StringOfSacrifice.create(plugin));
+            } else if (isTempestScythe(item)) {
+                inventory.setItem(i, TempestScythe.create(plugin));
+            } else if (isVerdantPurifier(item)) {
+                inventory.setItem(i, VerdantPurifier.create(plugin));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        String attackerName = player.getPersistentDataContainer().get(new NamespacedKey(plugin, "last_attacker"),
+                PersistentDataType.STRING);
+
+        if (attackerName != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String date = sdf.format(new Date());
+
+            ItemStack leather = new ItemStack(Material.LEATHER);
+            ItemMeta meta = leather.getItemMeta();
+            if (meta != null) {
+                meta.setDisplayName(ChatColor.RED + "Shroom Sacrifice");
+                meta.setLore(Arrays.asList(
+                        ChatColor.DARK_PURPLE + player.getName(),
+                        ChatColor.DARK_PURPLE + date));
+                leather.setItemMeta(meta);
+            }
+            player.getWorld().dropItemNaturally(player.getLocation(), leather);
+        }
+    }
+
+    private boolean isMythrilbreaker(ItemStack item) {
+        return isSpecialItem(item, Material.DIAMOND_PICKAXE, "mythrilbreaker");
+    }
+
+    private boolean isEarthshaper(ItemStack item) {
+        return isSpecialItem(item, Material.DIAMOND_SHOVEL, "earthshaper");
+    }
+
+    private boolean isTimbercleaver(ItemStack item) {
+        return isSpecialItem(item, Material.DIAMOND_AXE, "timbercleaver");
+    }
+
+    private boolean isShroomBlade(ItemStack item) {
+        return isSpecialItem(item, Material.SHEARS, "shroomblade");
+    }
+
+    private boolean isChickenShooter(ItemStack item) {
+        return isSpecialItem(item, Material.BOW, "chickenshooter");
+    }
+
+    private boolean isInfernoBow(ItemStack item) {
+        return isSpecialItem(item, Material.BOW, "infernobow");
+    }
+
+    private boolean isTidecallerBow(ItemStack item) {
+        return isSpecialItem(item, Material.BOW, "tidecallerbow");
+    }
+
+    private boolean isArcaneDetonator(ItemStack item) {
+        return isSpecialItem(item, Material.BOW, "arcanedetonator");
+    }
+
+    private boolean isStormstriker(ItemStack item) {
+        return isSpecialItem(item, Material.BOW, "stormstriker");
+    }
+
+    private boolean isStringOfSacrifice(ItemStack item) {
+        return isSpecialItem(item, Material.STRING, "stringofsacrifice");
+    }
+
+    private boolean isTempestScythe(ItemStack item) {
+        return isSpecialItem(item, Material.DIAMOND_HOE, "tempestscythe");
+    }
+
+    private boolean isVerdantPurifier(ItemStack item) {
+        return isSpecialItem(item, Material.STICK, "verdantpurifier");
+    }
+
+    private boolean isSpecialItem(ItemStack item, Material material, String key) {
+        if (item == null || item.getType() != material) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        return meta != null
+                && meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING)
+                && key.equals(meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING));
+    }
+}
