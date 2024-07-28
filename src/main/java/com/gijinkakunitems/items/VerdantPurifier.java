@@ -1,6 +1,7 @@
 package com.gijinkakunitems.items;
 
 import com.gijinkakunitems.GijinkakunItems;
+import com.gijinkakunitems.PluginUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -34,14 +35,6 @@ public class VerdantPurifier {
     }
 
     public static boolean isSpecialItem(ItemStack item, GijinkakunItems plugin) {
-        if (item == null) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return false;
-        }
-        return meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING) &&
-               "verdantpurifier".equals(meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING));
+        return PluginUtils.isSpecialItem(item, "verdantpurifier", plugin);
     }
 }

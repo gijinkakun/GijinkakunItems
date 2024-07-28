@@ -1,5 +1,6 @@
 package com.gijinkakunitems.abilities;
 
+import com.gijinkakunitems.CustomDeathMessageHandler;
 import com.gijinkakunitems.GijinkakunItems;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -7,7 +8,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -51,14 +51,11 @@ public class ShroomBladeAbility {
         }
     }
 
-    public static void preventModification(InventoryClickEvent event, GijinkakunItems plugin) {
-        ItemStack currentItem = event.getCurrentItem();
-        ItemStack cursorItem = event.getCursor();
-        if (isSpecialItem(currentItem, "shroomblade", plugin) || isSpecialItem(cursorItem, "shroomblade", plugin)) {
-            event.setCancelled(true);
-            if (event.getWhoClicked() instanceof Player) {
-                ((Player) event.getWhoClicked()).sendMessage(ChatColor.RED + "You cannot modify the special items!");
-            }
+    public static void apply(PlayerDeathEvent event, GijinkakunItems plugin) {
+        Player player = event.getEntity();
+        Player killer = player.getKiller();
+        if (killer != null && isSpecialItem(killer.getInventory().getItemInMainHand(), "shroomblade", plugin)) {
+            CustomDeathMessageHandler.handleDeathMessage(event, "shroomblade", killer);
         }
     }
 
@@ -67,6 +64,7 @@ public class ShroomBladeAbility {
             return false;
         }
         ItemMeta meta = item.getItemMeta();
-        return meta != null && meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING) && key.equals(meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING));
+        return meta != null && meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING) &&
+               key.equals(meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING));
     }
 }

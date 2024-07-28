@@ -1,6 +1,7 @@
 package com.gijinkakunitems.items;
 
 import com.gijinkakunitems.GijinkakunItems;
+import com.gijinkakunitems.PluginUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -19,11 +20,12 @@ public class TempestScythe {
         if (meta != null) {
             meta.setDisplayName(ChatColor.RED + "Tempest Scythe");
             meta.setLore(Arrays.asList(
+                    ChatColor.DARK_PURPLE + "",
                     ChatColor.DARK_PURPLE + "Forged in an eternal storm,",
                     ChatColor.DARK_PURPLE + "the Tempest Scythe unleashes",
                     ChatColor.DARK_PURPLE + "whirlwinds with each swing,",
                     ChatColor.DARK_PURPLE + "striking down all within its reach."));
-            meta.addEnchant(Enchantment.SHARPNESS, 10, true);
+            meta.addEnchant(Enchantment.SHARPNESS, 15, true);
             meta.addEnchant(Enchantment.UNBREAKING, 10, true);
             meta.addEnchant(Enchantment.MENDING, 1, true);
             meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING, "tempestscythe");
@@ -34,14 +36,6 @@ public class TempestScythe {
     }
 
     public static boolean isSpecialItem(ItemStack item, GijinkakunItems plugin) {
-        if (item == null) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return false;
-        }
-        return meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING) &&
-               "tempestscythe".equals(meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING));
+        return PluginUtils.isSpecialItem(item, "tempestscythe", plugin);
     }
 }

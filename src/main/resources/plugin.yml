@@ -1,5 +1,5 @@
 name: GijinkakunItems
-version: 1.0
+version: 1.1.0
 main: com.gijinkakunitems.GijinkakunItems
 api-version: 1.21.0
 description: GijinkakunItems plugin introduces a variety of unique, enchanted items, each with its own special abilities.

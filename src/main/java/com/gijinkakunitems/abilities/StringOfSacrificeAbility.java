@@ -1,21 +1,19 @@
 package com.gijinkakunitems.abilities;
 
 import com.gijinkakunitems.GijinkakunItems;
-import org.bukkit.NamespacedKey;
+import com.gijinkakunitems.PluginUtils;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.inventory.Inventory;
 
 public class StringOfSacrificeAbility {
 
@@ -25,7 +23,7 @@ public class StringOfSacrificeAbility {
         if (location.getY() < -64) {
             Inventory inventory = player.getInventory();
             for (ItemStack item : inventory.getContents()) {
-                if (isSpecialItem(item, "stringofsacrifice", plugin)) {
+                if (PluginUtils.isSpecialItem(item, "stringofsacrifice", plugin)) {
                     World overworld = Bukkit.getWorlds().get(0);
                     Location spawnLocation = overworld.getSpawnLocation();
                     player.teleport(spawnLocation);
@@ -49,7 +47,7 @@ public class StringOfSacrificeAbility {
             if (event.getCause() == EntityDamageEvent.DamageCause.VOID) {
                 Inventory inventory = player.getInventory();
                 for (ItemStack item : inventory.getContents()) {
-                    if (isSpecialItem(item, "stringofsacrifice", plugin)) {
+                    if (PluginUtils.isSpecialItem(item, "stringofsacrifice", plugin)) {
                         event.setCancelled(true);
                         break;
                     }
@@ -59,21 +57,6 @@ public class StringOfSacrificeAbility {
     }
 
     public static void preventModification(InventoryClickEvent event, GijinkakunItems plugin) {
-        ItemStack currentItem = event.getCurrentItem();
-        ItemStack cursorItem = event.getCursor();
-        if (isSpecialItem(currentItem, "stringofsacrifice", plugin) || isSpecialItem(cursorItem, "stringofsacrifice", plugin)) {
-            event.setCancelled(true);
-            if (event.getWhoClicked() instanceof Player) {
-                ((Player) event.getWhoClicked()).sendMessage(ChatColor.RED + "You cannot modify the special items!");
-            }
-        }
-    }
-
-    private static boolean isSpecialItem(ItemStack item, String key, GijinkakunItems plugin) {
-        if (item == null) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        return meta != null && meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING) && key.equals(meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING));
+        PluginUtils.preventModification(event, "stringofsacrifice", plugin);
     }
 }

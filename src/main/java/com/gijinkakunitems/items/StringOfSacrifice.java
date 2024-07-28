@@ -1,14 +1,15 @@
 package com.gijinkakunitems.items;
 
 import com.gijinkakunitems.GijinkakunItems;
+import com.gijinkakunitems.PluginUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
 
 import java.util.Arrays;
 
@@ -32,14 +33,6 @@ public class StringOfSacrifice {
     }
 
     public static boolean isSpecialItem(ItemStack item, GijinkakunItems plugin) {
-        if (item == null) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return false;
-        }
-        return meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING) &&
-               "stringofsacrifice".equals(meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING));
+        return PluginUtils.isSpecialItem(item, "stringofsacrifice", plugin);
     }
 }

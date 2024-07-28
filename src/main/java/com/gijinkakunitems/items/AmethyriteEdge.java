@@ -1,6 +1,7 @@
 package com.gijinkakunitems.items;
 
 import com.gijinkakunitems.GijinkakunItems;
+import com.gijinkakunitems.PluginUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -20,9 +21,11 @@ public class AmethyriteEdge {
         if (meta != null) {
             meta.setDisplayName(ChatColor.LIGHT_PURPLE + "Amethyrite Edge");
             meta.setLore(Arrays.asList(
+                    ChatColor.DARK_PURPLE + "",
                     ChatColor.DARK_PURPLE + "Forged by master blacksmiths,",
                     ChatColor.DARK_PURPLE + "this enchanted tool was imbued",
-                    ChatColor.DARK_PURPLE + "with the essence of the crystals it seeks."));
+                    ChatColor.DARK_PURPLE + "with the essence of the crystals",
+                    ChatColor.DARK_PURPLE + "it seeks."));
             meta.addEnchant(Enchantment.UNBREAKING, 10, true);
             meta.addEnchant(Enchantment.MENDING, 1, true);
             meta.addEnchant(Enchantment.EFFICIENCY, 10, true);
@@ -36,14 +39,6 @@ public class AmethyriteEdge {
     }
 
     public static boolean isSpecialItem(ItemStack item, GijinkakunItems plugin) {
-        if (item == null) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return false;
-        }
-        return meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING) &&
-               "amethyriteedge".equals(meta.getPersistentDataContainer().get(new NamespacedKey(plugin, "special_item"), PersistentDataType.STRING));
+        return PluginUtils.isSpecialItem(item, "amethyriteedge", plugin);
     }
 }

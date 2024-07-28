@@ -1,7 +1,7 @@
 package com.gijinkakunitems.events;
 
 import com.gijinkakunitems.GijinkakunItems;
-import com.gijinkakunitems.abilities.*;
+import com.gijinkakunitems.PluginUtils;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -25,23 +25,23 @@ public class InventoryClickEventListener implements Listener {
             type == InventoryType.ENCHANTING ||
             type == InventoryType.GRINDSTONE ||
             type == InventoryType.SMITHING ||
-            type == InventoryType.STONECUTTER ||
-            type == InventoryType.WORKBENCH) {
+            type == InventoryType.STONECUTTER ) {
 
-            MythrilbreakerAbility.preventModification(event, plugin);
-            EarthshaperAbility.preventModification(event, plugin);
-            TimbercleaverAbility.preventModification(event, plugin);
-            ShroomBladeAbility.preventModification(event, plugin);
-            ChickenShooterAbility.preventModification(event, plugin);
-            InfernoBowAbility.preventModification(event, plugin);
-            TidecallerBowAbility.preventModification(event, plugin);
-            ArcaneDetonatorAbility.preventModification(event, plugin);
-            StormstrikerAbility.preventModification(event, plugin);
-            StringOfSacrificeAbility.preventModification(event, plugin);
-            TempestScytheAbility.preventModification(event, plugin);
-            VerdantPurifierAbility.preventModification(event, plugin);
-            BloodrenderAbility.preventModification(event, plugin);
-            AmethyriteEdgeAbility.preventModification(event, plugin);
+            PluginUtils.preventModification(event, "mythrilbreaker", plugin);
+            PluginUtils.preventModification(event, "earthshaper", plugin);
+            PluginUtils.preventModification(event, "timbercleaver", plugin);
+            PluginUtils.preventModification(event, "shroomblade", plugin);
+            PluginUtils.preventModification(event, "chickenshooter", plugin);
+            PluginUtils.preventModification(event, "infernobow", plugin);
+            PluginUtils.preventModification(event, "tidecallerbow", plugin);
+            PluginUtils.preventModification(event, "arcanedetonator", plugin);
+            PluginUtils.preventModification(event, "stormstriker", plugin);
+            PluginUtils.preventModification(event, "stringofsacrifice", plugin);
+            PluginUtils.preventModification(event, "tempestscythe", plugin);
+            PluginUtils.preventModification(event, "verdantpurifier", plugin);
+            PluginUtils.preventModification(event, "bloodrender", plugin);
+            PluginUtils.preventModification(event, "amethyriteedge", plugin);
+            PluginUtils.preventModification(event, "luminadust", plugin);
         }
     }
 }

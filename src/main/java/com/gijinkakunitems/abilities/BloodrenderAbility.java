@@ -1,5 +1,6 @@
 package com.gijinkakunitems.abilities;
 
+import com.gijinkakunitems.CustomDeathMessageHandler;
 import com.gijinkakunitems.GijinkakunItems;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
@@ -8,7 +9,6 @@ import com.google.gson.JsonParser;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -32,18 +32,9 @@ public class BloodrenderAbility {
                 if (isSpecialItem(itemStack, plugin)) {
                     ItemStack playerHead = createPlayerHead(player.getName(), player.getUniqueId());
                     player.getLocation().getWorld().dropItemNaturally(player.getLocation(), playerHead);
-                }
-            }
-        }
-    }
 
-    public static void preventModification(InventoryClickEvent event, GijinkakunItems plugin) {
-        ItemStack currentItem = event.getCurrentItem();
-        ItemStack cursorItem = event.getCursor();
-        if (isSpecialItem(currentItem, plugin) || isSpecialItem(cursorItem, plugin)) {
-            event.setCancelled(true);
-            if (event.getWhoClicked() instanceof Player) {
-                ((Player) event.getWhoClicked()).sendMessage(ChatColor.RED + "You cannot modify the special items!");
+                    CustomDeathMessageHandler.handleDeathMessage(event, "bloodrender", killer);
+                }
             }
         }
     }

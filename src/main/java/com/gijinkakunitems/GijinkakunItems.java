@@ -13,14 +13,13 @@ public class GijinkakunItems extends JavaPlugin {
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(new EntityDamageEventListener(this), this);
         Bukkit.getPluginManager().registerEvents(new InventoryClickEventListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerDeathEventListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerInteractEventListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinEventListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerMoveEventListener(this), this);
         Bukkit.getPluginManager().registerEvents(new ProjectileHitEventListener(this), this);
         Bukkit.getPluginManager().registerEvents(new BlockBreakEventListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new EntityDeathEventListener(this), this); // Register the new event
         getCommand("gijinkakunitems").setTabCompleter(new ItemTabCompleter());
+        CustomRecipes.registerRecipes(this);
         logToConsole("Gijinkakun Items has been enabled!", ChatColor.GREEN);
     }
 
