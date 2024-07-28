@@ -74,6 +74,9 @@ public class CommandHandler {
                 case "bloodrender":
                     item = Bloodrender.create(plugin);
                     break;
+                case "sleipnir":
+                    item = Sleipnir.create(plugin);
+                    break;
                 default:
                     sender.sendMessage(ChatColor.RED + "Unknown item type.");
                     return false;

@@ -24,7 +24,8 @@ public class ItemTabCompleter implements TabCompleter {
             "tempestscythe",
             "verdantpurifier",
             "amethyriteedge",
-            "bloodrender"
+            "bloodrender",
+            "sleipnir"
     );
 
     @Override

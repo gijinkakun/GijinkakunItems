@@ -42,6 +42,7 @@ public class InventoryClickEventListener implements Listener {
             VerdantPurifierAbility.preventModification(event, plugin);
             BloodrenderAbility.preventModification(event, plugin);
             AmethyriteEdgeAbility.preventModification(event, plugin);
+            SleipnirAbility.preventModification(event, plugin);
         }
     }
 }
