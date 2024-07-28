@@ -19,7 +19,10 @@ public class GijinkakunItems extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerMoveEventListener(this), this);
         Bukkit.getPluginManager().registerEvents(new ProjectileHitEventListener(this), this);
         Bukkit.getPluginManager().registerEvents(new BlockBreakEventListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new EntityDeathEventListener(this), this); // Register the new event
+        Bukkit.getPluginManager().registerEvents(new EntityDeathEventListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerItemHeldEventListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerQuitEventListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerArmorChangeEventListener(this), this); // Register the new event
         getCommand("gijinkakunitems").setTabCompleter(new ItemTabCompleter());
         logToConsole("Gijinkakun Items has been enabled!", ChatColor.GREEN);
     }
